@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/patrickbray/jenkinsx-boot:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/patrickbray/jenkinsx-boot:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: jenkinsx-boot
+        chartPath: charts/jenkinsx-boot
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/patrickbray/jenkinsx-boot'
+          image.tag: '{{.DIGEST_HEX}}'
